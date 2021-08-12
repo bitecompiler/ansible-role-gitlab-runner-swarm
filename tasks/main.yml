@@ -1,29 +1,38 @@
 ---
-- name: Start gitlab-runner in docker
-  community.docker.docker_container:
+- name: Check if the runner already exists
+  community.docker.docker_container_info:
     name: gitlab-runner
-    image: gitlab/gitlab-runner:latest
-    restart_policy: always
-    detach: yes
-    volumes:
-      - gitlab-runner:/etc/gitlab-runner
-      - /var/run/docker.sock:/var/run/docker.sock
-  tags:
-  - runner
-  - runner-install
+  register: result
 
-- name: Register gitlab-runner
-  community.docker.docker_container_exec:
-    container: gitlab-runner
-    argv:
-      - gitlab-runner
-      - "register -n"
-      - "--executor docker"
-      - "--docker-image docker:latest"
-      - "--docker-volumes /var/run/docker.sock:/var/run/docker.sock"
-      - "--url {{ gitlab_domain }}"
-      - "--registration-token {{ gitlab_token }}"
-      - "--tag-list swarm-cluster,prod"
-  tags:
-  - runner
-  - runner-register
+- name: Does container exist?
+  ansible.builtin.debug:
+    msg: "The container {{ 'exists' if result.exists else 'does not exist' }}"
+
+#- name: Start gitlab-runner in docker
+#  community.docker.docker_container:
+#    name: gitlab-runner
+#    image: gitlab/gitlab-runner:latest
+#    restart_policy: always
+#    detach: yes
+#    volumes:
+#      - gitlab-runner:/etc/gitlab-runner
+#      - /var/run/docker.sock:/var/run/docker.sock
+#  tags:
+#  - runner
+#  - runner-install
+
+#- name: Register gitlab-runner
+#  community.docker.docker_container_exec:
+#    container: gitlab-runner
+#    argv:
+#      - gitlab-runner
+#      - "register -n"
+#      - "--executor docker"
+#      - "--docker-image docker:latest"
+#      - "--docker-volumes /var/run/docker.sock:/var/run/docker.sock"
+#      - "--url {{ gitlab_domain }}"
+#      - "--registration-token {{ gitlab_token }}"
+#      - "--tag-list swarm-cluster,prod"
+#  tags:
+#  - runner
+#  - runner-register
