@@ -22,30 +22,30 @@
   - runner
   - runner-start
 
-- name: Run a simple command (command)
+- name: Check if the runner is registered
   community.docker.docker_container_exec:
     container: gitlab-runner
-    command: /bin/bash -c "gitlab-runner list 2> >(grep -i swarm01)"
+    command: /bin/bash -c "gitlab-runner list 2> >(grep -i '{{ ansible_facts['ansible_nodename'] }}')"
   register: registered
 
 - name: Does container exist?
   ansible.builtin.debug:
-    msg: "The runner {{ 'is not registered' if not registered.stdout else 'is registered' }}"
+    msg: "The runner for {{ ansible_facts['ansible_nodename'] }} {{ 'is not registered' if not registered.stdout else 'is registered' }}"
 
-
-#- name: Register gitlab-runner
-#  community.docker.docker_container_exec:
-#    container: gitlab-runner
-#    argv:
-#      - gitlab-runner
-#      - "register -n"
-#      - "--executor docker"
-#      - "--docker-image docker:latest"
-#      - "--docker-volumes /var/run/docker.sock:/var/run/docker.sock"
-#      - "--url {{ gitlab_domain }}"
-#      - "--registration-token {{ gitlab_token }}"
-#      - "--tag-list swarm-cluster,prod"
-#  when: not registered.stdout
-#  tags:
-#  - runner
-#  - runner-register
+- name: Register gitlab-runner
+  community.docker.docker_container_exec:
+    container: gitlab-runner
+    argv:
+      - gitlab-runner
+      - "register -n"
+      - "--name \"{{ ansible_facts['ansible_nodename'] }}\""
+      - "--executor docker"
+      - "--docker-image docker:latest"
+      - "--docker-volumes /var/run/docker.sock:/var/run/docker.sock"
+      - "--url {{ gitlab_domain }}"
+      - "--registration-token {{ gitlab_token }}"
+      - "--tag-list swarm-cluster,prod"
+  when: not registered.stdout
+  tags:
+  - runner
+  - runner-register
