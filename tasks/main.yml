@@ -8,18 +8,19 @@
   ansible.builtin.debug:
     msg: "The container {{ 'exists' if result.exists else 'does not exist' }}"
 
-#- name: Start gitlab-runner in docker
-#  community.docker.docker_container:
-#    name: gitlab-runner
-#    image: gitlab/gitlab-runner:latest
-#    restart_policy: always
-#    detach: yes
-#    volumes:
-#      - gitlab-runner:/etc/gitlab-runner
-#      - /var/run/docker.sock:/var/run/docker.sock
-#  tags:
-#  - runner
-#  - runner-install
+- name: Start gitlab-runner in docker
+  community.docker.docker_container:
+    name: gitlab-runner
+    image: gitlab/gitlab-runner:latest
+    restart_policy: always
+    detach: yes
+    volumes:
+      - gitlab-runner:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+  when: not result.exists
+  tags:
+  - runner
+  - runner-install
 
 #- name: Register gitlab-runner
 #  community.docker.docker_container_exec:
